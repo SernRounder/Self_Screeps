@@ -7,6 +7,7 @@ if (!('lock' in Memory)) {
     Memory.lock = {}
 }
 module.exports.loop = function () {
+    console.log('In GitHub!')
     if (Game.cpu.bucket > 9000) {
         Game.cpu.generatePixel();
     }
