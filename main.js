@@ -1,16 +1,11 @@
-var minerRule = require('miner');
-var workerRule=require('builder');
-var senderRule=require('sender');
-var soldierRule=require('soldier')
 var room=require('room')
-var checker=requier('checker')
+var checker=requier('./checker')
+
 var spawnRule=require('spawn')
-var switcher = {
-    'miner': minerRule, //只需要5work和1move的creep
-    'worker': workerRule,  //平均的creep
-    'sender': senderRule, //需要侧重carry和move的creep
-    'soldier': soldierRule//用于进攻的creep
-};
+
+var creepsRun=require('./creep.run')
+var mount=require('./mount')
+
 
 if (!('lock' in Memory)) {
     Memory.lock = {}
@@ -20,6 +15,9 @@ console.log('init finish')
 
 
 module.exports.loop = function () {
+    //挂载扩展
+    mount()
+    
     //清理memory
     checker.run()
 
@@ -29,14 +27,7 @@ module.exports.loop = function () {
     }
     //运行spawn逻辑
     spawnRule.run(Game.spawns)
-    
-    
-
     //让每个creep跑
-    for (var name in Game.creeps) {
-        var creep = Game.creeps[name];
-        switcher[creep.memory.role].run(creep);
-        //switcher['miner'].run(creep)
-    }
+    creepsRun()
 
 }
