@@ -19,5 +19,6 @@ var room = {
 
     }
 }
+console.log('hi')
 
 module.exports = room;
