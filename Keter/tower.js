@@ -1,6 +1,6 @@
 var tower = {
     run: function (Towers) {
-        let MiniSave=900
+        let MiniSave=700
         const NeedsFix = Game.spawns['Spawn1'].room.find(FIND_STRUCTURES, {
             filter: object => object.hits < object.hitsMax
         });

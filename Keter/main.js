@@ -1,8 +1,6 @@
 var room=require('room')
 var checker=requier('./checker')
 
-var spawnRule=require('spawn')
-
 var creepsRun=require('./creep.run')
 var mount=require('./mount')
 
@@ -25,8 +23,6 @@ module.exports.loop = function () {
     for (var roomName in Game.rooms){
         room.run(roomName)
     }
-    //运行spawn逻辑
-    spawnRule.run(Game.spawns)
     //让每个creep跑
     creepsRun()
 

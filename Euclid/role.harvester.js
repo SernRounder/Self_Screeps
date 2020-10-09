@@ -1,5 +1,5 @@
 var roleHarvester = {
-    
+
     /** @param {Creep} creep **/
     run: function (creep) {
         if (creep.memory.work && creep.carry.energy == 0) {
@@ -75,7 +75,6 @@ var roleHarvester = {
         }
     }
 }
-
 
 
 module.exports = roleHarvester;
