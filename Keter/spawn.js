@@ -16,7 +16,9 @@ var spawn = {
                     var role = data[1]
                     var body = data[2] 
                     spawn.memory['spawning']=data
-                    spawn.spawnCreep(body, name, { memory: { role: role,born:spawn.room } })
+                    if (spawn.spawnCreep(body, name, { memory: { role: role,born:spawn.room } }) != 0 ){
+                        spawn.room.memory['spawnQueue'].push(data)
+                    }
                 }
             }
 
