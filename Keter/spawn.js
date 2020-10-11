@@ -2,10 +2,18 @@ var spawn = {
     run: function (spawns) {
         for (var cont in spawns) {
             var spawn = spawns[cont]
-            queue = spawn.room.memory['spawnQueue']
+            var partTable={
+                "work":WORK,
+                'carry':CARRY,
+                "move":MOVE,
+                "attack":ATTACK,
+                'rangeAttack':RANGED_ATTACK,
+                'heal':HEAL,
+                'claim':CLAIM
+            }
 
-            if (!spawn.room.memory['spawnQueue']) {
-                spawn.room.memory['spawnQueue'] = []
+            if (spawn.room.memory['spawnQueue'].length==0) {
+                break
                 //[[name,role,[part],weight],[name,role,[part],weight]]
             }
 
@@ -14,10 +22,14 @@ var spawn = {
                     var data = spawn.room.memory['spawnQueue'].pop()
                     var name = data[0]
                     var role = data[1]
-                    var body = data[2] 
-                    spawn.memory['spawning']=data
+                    var bodyOrder = data[2]
+                    var body=[]
+                    for (let part in bodyOrder){
+                        body=body.concat(Array(bodyOrder[part]).fill(partTable[part]))
+                    } 
                     if (spawn.spawnCreep(body, name, { memory: { role: role,born:spawn.room } }) != 0 ){
                         spawn.room.memory['spawnQueue'].push(data)
+                        console.log(spawn.spawnCreep(body, name, { memory: { role: role,born:spawn.room } }))
                     }
                 }
             }
@@ -26,4 +38,4 @@ var spawn = {
         }
     }
 }
-module.export = spawn
+module.exports = spawn

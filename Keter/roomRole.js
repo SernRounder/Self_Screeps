@@ -1,7 +1,7 @@
 var towerRule = require('tower')
 var spawnRule = require('spawn')
 
-var room = {
+var roomRole = {
     run: function (room = Game.rooms[0]) {
         var Towers = room.find(FIND_STRUCTURES, {
             filter: { structureType: STRUCTURE_TOWER }
@@ -28,33 +28,41 @@ var room = {
 }
 
 function calcLimit(room = Game.rooms[0]) {
-    var maxEnergy = room.energyAvailable()
+    var maxEnergy = room.energyAvailable
     if (maxEnergy < 300) {
         maxEnergy = 300
     }
-    let carrierBody = Array(0).fill(WORK)
-    var tempCont=maxEnergy/50/2 > 8 ? 8 : parseInt(maxEnergy/50/2)
-    carrierBody.push(Array(tempCont).fill(CARRY))
-    tempCont=maxEnergy/50/2 > 8 ? 8 : parseInt(maxEnergy/50/2)
-    carrierBody.push(Array(tempCont).fill(MOVE))
+    let extralEnergy=maxEnergy-50 //move
+    let carrierBody = {}
+    carrierBody['work']=0
+    var tempCont=extralEnergy/50/2 > 8 ? 8 : parseInt(extralEnergy/50/2)
+    carrierBody['carry']=tempCont
+    tempCont=extralEnergy/50/2 > 8 ? 8 : parseInt(extralEnergy/50/2)
+    carrierBody['move']=tempCont+1
 
-    tempCont=maxEnergy/100/2 > 8 ? 8 : parseInt(maxEnergy/100/2)
-    let workerBody = Array(tempCont).fill(WORK)
+    let workerBody={}
+    tempCont=extralEnergy/100/2 > 8 ? 8 : parseInt(extralEnergy/100/2)
+    workerBody['work']=tempCont
 
-    tempCont=maxEnergy/50/4 > 4 ? 4 : parseInt(maxEnergy/50/4)
-    workerBody.push(Array(tempCont).fill(CARRY))
-    workerBody.push(Array(6).fill(MOVE))
+    tempCont=extralEnergy/50/4 > 4 ? 4 : parseInt(extralEnergy/50/4)
+    workerBody['carry']=tempCont
 
-    let minerBody = Array(5).fill(WORK)
-    minerBody.push(Array(0).fill(CARRY))
-    minerBody.push(Array(3).fill(MOVE))
+    tempCont=extralEnergy/50/4 > 6 ? 6 : parseInt(extralEnergy/50/4)
+    workerBody['move']=tempCont+1
+
+
+    tempCont=extralEnergy/100*0.6 > 5 ? 5 : parseInt(extralEnergy/100*0.8)
+    let minerBody = {}
+    minerBody['work']=tempCont
+    tempCont=extralEnergy/100*0.4 > 3 ? 3 : parseInt(extralEnergy/100*0.2)
+    minerBody['move']=tempCont+1
 
     let CQCBody = Array(8).fill(TOUGH).concat(Array(8).fill(MOVE)).concat(Array(8).fill(ATTACK)).concat([MOVE])
 
     let RangeBody = Array(8).fill(TOUGH).concat(Array(8).fill(MOVE)).concat(Array(8).fill(RANGED_ATTACK)).concat([MOVE])
 
     let healerBody = Array(8).fill(TOUGH).concat(Array(8).fill(MOVE)).concat(Array(8).fill(HEAL)).concat([MOVE])
-    limit = {
+    var limit = {
         miner: [2, minerBody],
         carrier: [2, carrierBody],
         worker: [1, workerBody],
@@ -102,16 +110,18 @@ function balanceScreep(room = Game.rooms[0]) {
         if (creep.room == room) {
             let role = creep.memory.role
             if (!(role in creepCont)) {
-                creepCont[role] = -1
+                creepCont[role] = 0
             } else {
-                creepCont[role] -= 1
+                creepCont[role] = creepCont[role]-1
             }
         }
     }
+    console.log(creepCont)
+    
     //现在只需要往spawn.room.memory['spawnQueue']里push进去那些大于0的role
     for (let role in creepCont) {
         while (creepCont[role] > 0) {
-            spawnQueue.push([role + Game.time, role, limit[role][1], 1])
+            spawnQueue.push([role + Game.time+Math.random(), role, limit[role][1], 1])
             creepCont[role] -= 1
         }
     }
@@ -121,4 +131,4 @@ function balanceScreep(room = Game.rooms[0]) {
 }
 
 
-module.exports = room;
+module.exports = roomRole;
