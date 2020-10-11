@@ -6,8 +6,11 @@ module.exports = function () {
 // 自定义的 Creep 的拓展
 const creepExtension = {
     fillSpawn(){
+        if (this.memory.SendingType!=RESOURCE_ENERGY){
+            return false
+        }
         //寻找Spawn和Extension
-        var targets=creep.pos.findClosestByRange(FIND_STRUCTURES, {
+        var targets=this.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
                 return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
                     structure.energy < structure.energyCapacity;
@@ -20,9 +23,13 @@ const creepExtension = {
             return false
         }
     },
+
     // 填充所在房间所有 tower
     fillTower(PowerLimit=700) {
         //寻找剩下的能量在700以下的塔
+        if (this.memory.SendingType!=RESOURCE_ENERGY){
+            return false
+        }
         var towers = this.room.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
                 return (structure.structureType == STRUCTURE_TOWER) &&
@@ -52,6 +59,35 @@ const creepExtension = {
         if (this.transfer(dist, source) == ERR_NOT_IN_RANGE) {
             this.moveTo(dist, { visualizePathStyle: { stroke: '#ffffff' } });
         }
+    },
+
+    //将携带的能量就近存入store
+    saveSource(){
+        var Store = this.room.find(FIND_MY_STRUCTURES, {
+            filter: (structure) => {
+                return (structure.structureType == STRUCTURE_STORAGE)
+            }
+        });
+        if (Store.length>0){
+            creep.fillSth(dist=Store[0])
+            return true
+        }
+        return false
+    },
+
+    //填充red-red flag标记的东西
+    fillFlag(){
+        for (let flagName in Game.flags){
+            var flag=Game.flags[flagName]
+            if (flag.color==flag.secondaryColor && flag.color==COLOR_RED){
+                var target=this.room.lookForAt(LOOK_STRUCTURES,flag.pos)
+            }
+        }
+    },
+    
+    //对指定对象加锁(实现锁队列)
+    getLock(target){
+
     },
 
     // 挖矿
