@@ -1,6 +1,6 @@
 var roomRole=require('roomRole')
 var checker=require('./checkCreeps')
-
+const mount = require('./mount')
 var creepsRun=require('./creep.run')
 
 
@@ -14,7 +14,7 @@ console.log('init finish')
 
 module.exports.loop = function () {
 
-    
+    mount();
     //清理memory
     checker.run()
 
