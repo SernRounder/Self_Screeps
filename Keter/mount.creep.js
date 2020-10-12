@@ -50,7 +50,7 @@ const creepExtension = {
     getSource(target,sourceType=RESOURCE_ENERGY){
         if (this.withdraw(target, sourceType) == ERR_NOT_IN_RANGE) {
             this.moveTo(target, { visualizePathStyle: { stroke: '#ffaa00' } });
-        } 
+        }
             
     },
 
@@ -93,6 +93,6 @@ const creepExtension = {
 
     // 挖矿
     mine(){
-        
+        var sources = creep.room.find(FIND_SOURCES);
     }
 }
