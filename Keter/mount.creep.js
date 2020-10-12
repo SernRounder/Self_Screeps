@@ -16,8 +16,8 @@ const creepExtension = {
                     structure.energy < structure.energyCapacity;
             }
         });
-        if (targets.length>0){ //填充最近的
-            this.fillSth(RESOURCE_ENERGY,targets[0])
+        if (targets){ //填充最近的
+            this.fillSth(RESOURCE_ENERGY,targets)
             return true
         }else{//没有需要填充的
             return false
@@ -30,15 +30,15 @@ const creepExtension = {
         if (this.memory.SendingType!=RESOURCE_ENERGY){
             return false
         }
-        var towers = this.room.findClosestByRange(FIND_STRUCTURES, {
+        var towers = this.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
                 return (structure.structureType == STRUCTURE_TOWER) &&
                     structure.store[RESOURCE_ENERGY] <= PowerLimit;
             }
         });
-        if (towers.length > 0){
+        if (towers){
             //填充塔
-            this.fillSth(RESOURCE_ENERGY,towers[0])
+            this.fillSth(RESOURCE_ENERGY,towers)
             return true
         }else{
             //没有塔
@@ -47,7 +47,7 @@ const creepExtension = {
     },
 
     // 从target处获得source
-    getStorSource(target,sourceType=RESOURCE_ENERGY){
+    getSource(target,sourceType=RESOURCE_ENERGY){
         if (this.withdraw(target, sourceType) == ERR_NOT_IN_RANGE) {
             this.moveTo(target, { visualizePathStyle: { stroke: '#ffaa00' } });
         } 
@@ -69,7 +69,7 @@ const creepExtension = {
             }
         });
         if (Store.length>0){
-            creep.fillSth(dist=Store[0])
+            this.fillSth("energy",Store[0])
             return true
         }
         return false
@@ -83,6 +83,7 @@ const creepExtension = {
                 var target=this.room.lookForAt(LOOK_STRUCTURES,flag.pos)
             }
         }
+        return false
     },
     
     //对指定对象加锁(实现锁队列)

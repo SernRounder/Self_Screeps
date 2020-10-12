@@ -24,6 +24,10 @@ var roomRole = {
         //运行spawn
         spawnRule.run(spawns)
 
+    },
+    init: function(room){
+        calcLimit(room)
+        balanceScreep(room)
     }
 }
 

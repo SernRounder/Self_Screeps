@@ -9,6 +9,10 @@ if (!('lock' in Memory)) {
     Memory.lock = {}
 }
 
+for (var roomName in Game.rooms){
+    roomRole.init(Game.rooms[roomName])
+}
+
 console.log('init finish')
 
 

@@ -27,7 +27,7 @@ var tower = {
             } else {
                 var enemy = false
             }
-            console.log(tower.store.getUsedCapacity(RESOURCE_ENERGY))
+           
             if (enemy) {
                 //直接打
                 console.log(enemy.length)

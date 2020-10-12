@@ -1,6 +1,6 @@
-var Builder={
+var worker={
     run:function(Creep){
         
     }
 }
-module.exports = Builder;
+module.exports = worker;

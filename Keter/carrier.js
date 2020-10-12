@@ -11,20 +11,22 @@ var sender = {
             STRUCTURE_NUKER: 1,
             STRUCTURE_FACTORY: 1
         }
-
-        var resourceType = creep.memory['SendingType']//应该搬运的物品类型
+        if (! 'sending' in creep.memory){
+            creep.memory.sending=true
+        }
+        var resourceType = creep.memory['sendingType']//应该搬运的物品类型
         if (!resourceType) {//未设定类型时默认搬运能量
             resourceType = RESOURCE_ENERGY
-            creep.memory['SendingType'] = resourceType
+            creep.memory['sendingType'] = resourceType
         }
-
         
-        if (creep.memory.sending && creep.store[creep.memory.sendingType] == 0) {//状态机部分代码, 确定应该是拿货还是卸货状态
+        if (creep.memory.sending && !creep.store[creep.memory.sendingType]) {//状态机部分代码, 确定应该是拿货还是卸货状态
             creep.say('Im Hungry')
             creep.memory.sending = false
         }
-        if (!creep.memory.sending && creep.store[resourceType] == creep.store.getCapacity) {
+        if ((creep.memory.sending==false) && creep.store[resourceType] == creep.store.getCapacity(creep.memory.sendingType)) {
             creep.say('Im Full')
+            
             creep.memory.sending = true
         }
         //TODO :当前持有的东西不是自己要搬运的东西时的卸货代码
@@ -42,10 +44,19 @@ var sender = {
                 creep.saveSource()
             }
         } else { //拿货状态, 旗子标记的 > 掉落的 > 墓碑中的 > container中的
+            //目前只实现了从container里拿资源
             for (let flag in Game.flags) {
                 //优先捡拾blue-blue flag标记的地方
                 //靠近旗子
             }
+            var sources = creep.room.find(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return (structure.structureType == STRUCTURE_CONTAINER) &&
+                        structure.store[RESOURCE_ENERGY] > creep.store.getFreeCapacity(RESOURCE_ENERGY);
+                }
+            });
+            sources.sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
+            creep.getSource(sources[0])
         }
     }
 }
