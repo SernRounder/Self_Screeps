@@ -20,7 +20,7 @@ var tower = {
             }
             //attack
             const targets = tower.room.find(FIND_HOSTILE_CREEPS);
-            console.log(targets.length)
+            //console.log(targets.length)
 
             if (targets.length > 0) {
                 var enemy = targets
@@ -30,7 +30,7 @@ var tower = {
            
             if (enemy) {
                 //直接打
-                console.log(enemy.length)
+                //console.log(enemy.length)
                 tower.attack(enemy[0])
             } else if (fixer && tower.store.getUsedCapacity(RESOURCE_ENERGY) > MiniSave) {
                 //没敌人, 而且剩的能量多了再修
