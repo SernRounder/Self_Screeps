@@ -17,7 +17,9 @@ console.log('init finish')
 
 
 module.exports.loop = function () {
-
+    if (Game.cpu.bucket > 9000) {
+        Game.cpu.generatePixel();
+    }
     mount();
     //清理memory
     checker.run()

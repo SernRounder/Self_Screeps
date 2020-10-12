@@ -48,10 +48,10 @@ function calcLimit(room = Game.rooms[0]) {
     tempCont=extralEnergy/100/2 > 8 ? 8 : parseInt(extralEnergy/100/2)
     workerBody['work']=tempCont
 
-    tempCont=extralEnergy/50/4 > 4 ? 4 : parseInt(extralEnergy/50/4)
+    tempCont=extralEnergy/50/4 > 8 ? 8 : parseInt(extralEnergy/50/4)
     workerBody['carry']=tempCont
 
-    tempCont=extralEnergy/50/4 > 6 ? 6 : parseInt(extralEnergy/50/4)
+    tempCont=extralEnergy/50/4 > 8 ? 8 : parseInt(extralEnergy/50/4)
     workerBody['move']=tempCont+1
 
 
