@@ -7,7 +7,7 @@ module.exports = function () {
 const creepExtension = {
     fillSpawn(){
         if (this.memory.SendingType!=RESOURCE_ENERGY){
-            return false
+           // return false
         }
         //寻找Spawn和Extension
         var targets=this.pos.findClosestByRange(FIND_STRUCTURES, {
@@ -28,7 +28,7 @@ const creepExtension = {
     fillTower(PowerLimit=700) {
         //寻找剩下的能量在700以下的塔
         if (this.memory.SendingType!=RESOURCE_ENERGY){
-            return false
+            //return false
         }
         var towers = this.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
