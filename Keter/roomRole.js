@@ -43,7 +43,17 @@ function setStructure(room=Game.rooms[0]){//静态存储对象, 省的寻找了.
             structList[strucType]=[struc]
         }else{
             structList[strucType].push(struc)
+        }//储存对象列表
+
+        if(strucType==STRUCTURE_STORAGE)//储存当前房间的资源集散点
+        {
+            global[room.name]['store']=struc
         }
+    }
+    if (!('store'in global[room.name])){//当前房间内没有Store
+        global[room.name]['store']=global[room.name]['structList'][STRUCTURE_SPAWN][0].pos.findClosestByRange(FIND_MY_STRUCTURES,{filter: (structure)=>{
+            return structure.structureType==STRUCTURE_CONTAINER
+        }})//选择最近的container作为Store
     }
 }
 
