@@ -2,6 +2,7 @@ var roomRole=require('roomRole')
 var checker=require('./checkCreeps')
 const mount = require('./mount')
 var creepsRun=require('./creep.run')
+var dynLogic=require('creepLogic/dynamicLogic')
 
 
 
@@ -12,6 +13,8 @@ if (!('lock' in Memory)) {
 for (var roomName in Game.rooms){
     roomRole.init(Game.rooms[roomName])
 }
+
+dynLogic.init()
 
 console.log('init finish')
 

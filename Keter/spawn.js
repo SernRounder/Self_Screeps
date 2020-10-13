@@ -27,7 +27,7 @@ var spawn = {
                     for (let part in bodyOrder){
                         body=body.concat(Array(bodyOrder[part]).fill(partTable[part]))
                     } 
-                    if (spawn.spawnCreep(body, name, { memory: { role: role,born:spawn.room } }) != 0 ){
+                    if (spawn.spawnCreep(body, name, { memory: { role: role,born:spawn.room,actionMod='auto'} }) != 0 ){
                         spawn.room.memory['spawnQueue'].push(data)
                         //console.log(spawn.spawnCreep(body, name, { memory: { role: role,born:spawn.room } }))
                     }

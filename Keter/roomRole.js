@@ -26,8 +26,24 @@ var roomRole = {
 
     },
     init: function(room){
+        setStructure(room)
         calcLimit(room)
         balanceScreep(room)
+    }
+}
+
+function setStructure(room=Game.rooms[0]){//静态存储对象, 省的寻找了.
+    var structures=room.find(FIND_MY_STRUCTURES)
+    global[room.name]['structList']={} //可用对象
+    var structList={}
+    for (var structure of structures){
+        let strucType=structure.structureType
+        let struc=structure
+        if (!(strucType in structList)){
+            structList[strucType]=[struc]
+        }else{
+            structList[strucType].push(struc)
+        }
     }
 }
 

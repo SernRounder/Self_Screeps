@@ -90,7 +90,24 @@ const creepExtension = {
     getLock(target){
 
     },
-
+    
+    //到达指定flag所在房间
+    move2Flag(flag=Game.flags[0],dis=1){
+        if (!('visited' in this.memory)){
+            this.memory['visited']={}
+        }
+        if (!(flag.name in this.memory.visited)){
+            if (this.pos.getRangeTo(flag.pos)>dis){
+                this.moveTo(flag.pos)
+                return true
+            }
+            else{
+                this.memory.visited[flag.name]=1
+            }
+        }
+        return false
+        
+    },
     // 挖矿
     mine(){
         var sources = creep.room.find(FIND_SOURCES);
