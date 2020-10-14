@@ -26,8 +26,34 @@ var roomRole = {
 
     },
     init: function(room){
+        setStructure(room)
         calcLimit(room)
         balanceScreep(room)
+    }
+}
+
+function setStructure(room=Game.rooms[0]){//静态存储对象, 省的寻找了.
+    var structures=room.find(FIND_MY_STRUCTURES)
+    global[room.name]['structList']={} //可用对象
+    var structList={}
+    for (var structure of structures){
+        let strucType=structure.structureType
+        let struc=structure
+        if (!(strucType in structList)){
+            structList[strucType]=[struc]
+        }else{
+            structList[strucType].push(struc)
+        }//储存对象列表
+
+        if(strucType==STRUCTURE_STORAGE)//储存当前房间的资源集散点
+        {
+            global[room.name]['store']=struc
+        }
+    }
+    if (!('store'in global[room.name])){//当前房间内没有Store
+        global[room.name]['store']=global[room.name]['structList'][STRUCTURE_SPAWN][0].pos.findClosestByRange(FIND_MY_STRUCTURES,{filter: (structure)=>{
+            return structure.structureType==STRUCTURE_CONTAINER
+        }})//选择最近的container作为Store
     }
 }
 
@@ -48,10 +74,10 @@ function calcLimit(room = Game.rooms[0]) {
     tempCont=extralEnergy/100/2 > 8 ? 8 : parseInt(extralEnergy/100/2)
     workerBody['work']=tempCont
 
-    tempCont=extralEnergy/50/4 > 8 ? 8 : parseInt(extralEnergy/50/4)
+    tempCont=extralEnergy/50/4 > 4 ? 4 : parseInt(extralEnergy/50/4)
     workerBody['carry']=tempCont
 
-    tempCont=extralEnergy/50/4 > 8 ? 8 : parseInt(extralEnergy/50/4)
+    tempCont=extralEnergy/50/4 > 6 ? 6 : parseInt(extralEnergy/50/4)
     workerBody['move']=tempCont+1
 
 

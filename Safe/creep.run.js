@@ -2,6 +2,7 @@ var minerRule = require('miner');
 var workerRule=require('worker');
 var carrierRule=require('carrier');
 var upgraderRule=require('upgrader')
+var directRule=requiel('creepLogic/direct')
 //var soldierRule=require('soldier');
 //var claimer=require('claim')
 var switcher = {
@@ -17,10 +18,14 @@ module.exports = function () {
     //针对creep执行逻辑
     for (var name in Game.creeps) {
         var creep = Game.creeps[name];
-        try{
-            switcher[creep.memory.role].run(creep);
-        }catch{
-            creep.suicide()//鲨了计划外的creep
+        if (creep.memory.actionMod == 'direct') {
+            directRule.run(creep)
+        } else {
+            try {
+                switcher[creep.memory.role].run(creep);
+            } catch {
+                creep.suicide()//鲨了计划外的creep
+            }
         }
         //快死了
         if (creep.ticksToLive==10){
