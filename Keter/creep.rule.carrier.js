@@ -11,7 +11,7 @@ var sender = {
             STRUCTURE_NUKER: 1,
             STRUCTURE_FACTORY: 1
         }
-        if (creep.memory['sending'] == undefined) {
+        if (creep.memory['sending']==undefined) {
             creep.memory['sending'] = true
         }
         var resourceType = creep.memory['sendingType']//应该搬运的物品类型
@@ -49,22 +49,12 @@ var sender = {
                 //优先捡拾blue-blue flag标记的地方
                 //靠近旗子
             }
-            /*var sources = creep.room.find(FIND_STRUCTURES, {
+            var sources = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
                     return (structure.structureType == STRUCTURE_CONTAINER) &&
                         structure.store[RESOURCE_ENERGY] > creep.store.getFreeCapacity(RESOURCE_ENERGY);
                 }
-            });*/
-            var sources = []
-            for (let types in global[creep.room.name]['structList']) {
-                if (types == STRUCTURE_CONTAINER) {
-                    for (let struct in global[creep.room.name]['structList'][types]) {
-                        if (struct.store[RESOURCE_ENERGY] > creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
-                            sources.push(struct)
-                        }
-                    }
-                }
-            }
+            });
             sources.sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
             creep.getSource(sources[0])
         }

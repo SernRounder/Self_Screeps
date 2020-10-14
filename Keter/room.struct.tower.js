@@ -8,7 +8,9 @@ var tower = {
             var tower = Towers[cont]
 
             const NeedsFix = tower.room.find(FIND_STRUCTURES, {
-                filter: object => object.hits < object.hitsMax
+                filter: (structure) => {
+                    return (structure.hits < structure.hitsMax && structure.hits<25000000)
+                }
             });
 
             NeedsFix.sort((a, b) => a.hits - b.hits);

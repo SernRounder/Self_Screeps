@@ -1,5 +1,5 @@
-var towerRule = require('tower')
-var spawnRule = require('spawn')
+var towerRule = require('room.struct.tower')
+var spawnRule = require('room.struct.spawn')
 
 var roomRole = {
     run: function (room = Game.rooms[0]) {
@@ -34,6 +34,7 @@ var roomRole = {
 
 function setStructure(room=Game.rooms[0]){//静态存储对象, 省的寻找了.
     var structures=room.find(FIND_MY_STRUCTURES)
+    global[room.name]={}
     global[room.name]['structList']={} //可用对象
     var structList={}
     for (var structure of structures){
