@@ -54,7 +54,7 @@ var roleHarvester = {
                 }
             }
             else {
-                var targets = creep.room.findClosestByRange(FIND_STRUCTURES, {
+                var targets = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                     filter: (structure) => {
                         return (structure.structureType == STRUCTURE_TOWER) &&
                             structure.energy <= structure.energyCapacity-299;
