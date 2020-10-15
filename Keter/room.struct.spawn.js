@@ -39,7 +39,7 @@ var spawn = {
                         }
                     }) != 0) {
                         spawn.room.memory['spawnQueue'].push(data)
-                        //console.log(spawn.spawnCreep(body, name, { memory: { role: role,born:spawn.room } }))
+                        //Game.spawns['Spawn1'].room.memory['spawnQueue'].push(['carrier','carrier',{'move':1,'work':1,'claim':1},1,'direct'])
                     }
                 }
             }
