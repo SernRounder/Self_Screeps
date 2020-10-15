@@ -49,7 +49,7 @@ module.exports.loop = function () {
             let workerTemp = [WORK, WORK, WORK, WORK,WORK,WORK,WORK,WORK,
                 CARRY, CARRY, CARRY, CARRY,
                 MOVE, MOVE, MOVE, MOVE,MOVE,MOVE]
-            if (upgraders.length < 1) {
+            if (upgraders.length < 0) {
                 var newName = 'upgraders' + Game.time;
                 console.log('Spawning new upgraders: ' + newName);
                 Game.spawns['Spawn1'].spawnCreep(workerTemp, newName,
@@ -74,7 +74,7 @@ module.exports.loop = function () {
     const targets1 = Game.spawns['Spawn1'].room.find(FIND_STRUCTURES, {
         //filter: object => object.hits < object.hitsMax
         filter: (structure) => {
-            return (structure.hits < structure.hitsMax && structure.hits<25000000)
+            return (structure.hits < structure.hitsMax && structure.hits<10000)
         }
     });
 
@@ -106,7 +106,7 @@ module.exports.loop = function () {
         if (enemy) {
             //console.log(enemy.length)
             tower.attack(enemy[0])
-        } else if (fixer && tower.store.getUsedCapacity(RESOURCE_ENERGY) > 700) {
+        } else if (fixer && tower.store.getUsedCapacity(RESOURCE_ENERGY) > 50) {
             tower.repair(fixer[0])
         }
 
