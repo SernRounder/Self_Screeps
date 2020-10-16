@@ -35,7 +35,8 @@ var spawn = {
                         memory: {
                             role: role,
                             born: spawn.room,
-                            actionMod: workMod
+                            actionMod: workMod,
+                            mission:{}
                         }
                     }) != 0) {
                         spawn.room.memory['spawnQueue'].push(data)

@@ -25,36 +25,44 @@ var roomRole = {
         spawnRule.run(spawns)
 
     },
-    init: function(room){
+    init: function (room) {
         setStructure(room)
         calcLimit(room)
         balanceScreep(room)
     }
 }
 
-function setStructure(room=Game.rooms[0]){//静态存储对象, 省的寻找了.
-    var structures=room.find(FIND_MY_STRUCTURES)
-    global[room.name]={}
-    global[room.name]['structList']={} //可用对象
-    var structList={}
-    for (var structure of structures){
-        let strucType=structure.structureType
-        let struc=structure
-        if (!(strucType in structList)){
-            structList[strucType]=[struc]
-        }else{
+function setStructure(room = Game.rooms[0]) {//静态存储对象, 省的寻找了.
+    var structures = room.find(FIND_MY_STRUCTURES)
+    global[room.name] = {}
+     //可用对象
+    var structList = {}
+    for (var structure of structures) {
+        let strucType = structure.structureType
+        let struc = structure
+        if (!(strucType in structList)) {
+            structList[strucType] = [struc]
+        } else {
             structList[strucType].push(struc)
         }//储存对象列表
 
-        if(strucType==STRUCTURE_STORAGE)//储存当前房间的资源集散点
+        if (strucType == STRUCTURE_STORAGE)//储存当前房间的资源集散点
         {
-            global[room.name]['store']=struc
+            global[room.name]['store'] = struc
         }
     }
-    if (!('store'in global[room.name])){//当前房间内没有Store
-        global[room.name]['store']=global[room.name]['structList'][STRUCTURE_SPAWN][0].pos.findClosestByRange(FIND_MY_STRUCTURES,{filter: (structure)=>{
-            return structure.structureType==STRUCTURE_CONTAINER
-        }})//选择最近的container作为Store
+    global[room.name]['structList'] = structList
+    if (!('store' in global[room.name])) {//当前房间内没有Store
+        if (!(STRUCTURE_CONTAINER in global[room.name]['structList'])) {//也没有container
+            global[room.name]['store'] = room.getPositionAt(structList[STRUCTURE_SPAWN].pos.x+5,structList[STRUCTURE_SPAWN].pos.y+5 ) //选择spawn附近的一点作为能量集散点
+            
+        } else {
+            global[room.name]['store'] = global[room.name]['structList'][STRUCTURE_SPAWN][0].pos.findClosestByRange(FIND_MY_STRUCTURES, {
+                filter: (structure) => {
+                    return structure.structureType == STRUCTURE_CONTAINER
+                }
+            })//选择最近的container作为Store
+        }
     }
 }
 
@@ -63,30 +71,30 @@ function calcLimit(room = Game.rooms[0]) {
     if (maxEnergy < 300) {
         maxEnergy = 300
     }
-    let extralEnergy=maxEnergy-50 //move
+    let extralEnergy = maxEnergy - 50 //move
     let carrierBody = {}
-    carrierBody['work']=0
-    var tempCont=extralEnergy/50/2 > 8 ? 8 : parseInt(extralEnergy/50/2)
-    carrierBody['carry']=tempCont
-    tempCont=extralEnergy/50/2 > 8 ? 8 : parseInt(extralEnergy/50/2)
-    carrierBody['move']=tempCont+1
+    carrierBody['work'] = 0
+    var tempCont = extralEnergy / 50 / 2 > 8 ? 8 : parseInt(extralEnergy / 50 / 2)
+    carrierBody['carry'] = tempCont
+    tempCont = extralEnergy / 50 / 2 > 8 ? 8 : parseInt(extralEnergy / 50 / 2)
+    carrierBody['move'] = tempCont + 1
 
-    let workerBody={}
-    tempCont=extralEnergy/100/2 > 8 ? 8 : parseInt(extralEnergy/100/2)
-    workerBody['work']=tempCont
+    let workerBody = {}
+    tempCont = extralEnergy / 100 / 2 > 8 ? 8 : parseInt(extralEnergy / 100 / 2)
+    workerBody['work'] = tempCont
 
-    tempCont=extralEnergy/50/4 > 4 ? 4 : parseInt(extralEnergy/50/4)
-    workerBody['carry']=tempCont
+    tempCont = extralEnergy / 50 / 4 > 4 ? 4 : parseInt(extralEnergy / 50 / 4)
+    workerBody['carry'] = tempCont
 
-    tempCont=extralEnergy/50/4 > 6 ? 6 : parseInt(extralEnergy/50/4)
-    workerBody['move']=tempCont+1
+    tempCont = extralEnergy / 50 / 4 > 6 ? 6 : parseInt(extralEnergy / 50 / 4)
+    workerBody['move'] = tempCont + 1
 
 
-    tempCont=extralEnergy/100*0.6 > 5 ? 5 : parseInt(extralEnergy/100*0.8)
+    tempCont = extralEnergy / 100 * 0.6 > 5 ? 5 : parseInt(extralEnergy / 100 * 0.8)
     let minerBody = {}
-    minerBody['work']=tempCont
-    tempCont=extralEnergy/100*0.4 > 3 ? 3 : parseInt(extralEnergy/100*0.2)
-    minerBody['move']=tempCont+1
+    minerBody['work'] = tempCont
+    tempCont = extralEnergy / 100 * 0.4 > 3 ? 3 : parseInt(extralEnergy / 100 * 0.2)
+    minerBody['move'] = tempCont + 1
 
     let CQCBody = Array(8).fill(TOUGH).concat(Array(8).fill(MOVE)).concat(Array(8).fill(ATTACK)).concat([MOVE])
 
@@ -143,16 +151,16 @@ function balanceScreep(room = Game.rooms[0]) {
             if (!(role in creepCont)) {
                 creepCont[role] = 0
             } else {
-                creepCont[role] = creepCont[role]-1
+                creepCont[role] = creepCont[role] - 1
             }
         }
     }
     console.log(creepCont)
-    
+
     //现在只需要往spawn.room.memory['spawnQueue']里push进去那些大于0的role
     for (let role in creepCont) {
         while (creepCont[role] > 0) {
-            spawnQueue.push([role + Game.time+Math.random(), role, limit[role][1], 1])
+            spawnQueue.push([role + Game.time + Math.random(), role, limit[role][1], 1])
             creepCont[role] -= 1
         }
     }
