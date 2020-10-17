@@ -41,13 +41,20 @@ function fillTower(PowerLimit = 700) {
 function getSource(target, sourceType = RESOURCE_ENERGY) { //从指定的建筑中拿source
     if (this.withdraw(target, sourceType) == ERR_NOT_IN_RANGE) {
         this.moveTo(target, { visualizePathStyle: { stroke: '#ffaa00' } });
+    }else{
+        return false
     }
+    return true
 }
 
 function fillSth(source = RESOURCE_ENERGY, dist) { // 使用source填充dist
     if (this.transfer(dist, source) == ERR_NOT_IN_RANGE) {
         this.moveTo(dist, { visualizePathStyle: { stroke: '#ffffff' } });
+        
+    }else{
+        return false
     }
+    return true
 }
 
 function saveSource() { //把当前拿的energy放到存储点
@@ -79,15 +86,14 @@ function lockMission(target) {
             this.memory.mission.missionID = target.MissionID
             target['Lock'] -= 1
             target['LockerID'].push(this.id)
+            this.memory.mission.noMission = false
         } else {
             return false
         }
-    } catch { return false }
+    } catch { console.log('LockMissionError!'); return false }
     return true
 }
-//TODO
-//写完free逻辑 √
-//写基于任务的搬运逻辑
+
 
 function pauseMission() {
     try {

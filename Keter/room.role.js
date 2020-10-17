@@ -54,7 +54,7 @@ function setStructure(room = Game.rooms[0]) {//静态存储对象, 省的寻找�
     global[room.name]['structList'] = structList
     if (!('store' in global[room.name])) {//当前房间内没有Store
         if (!(STRUCTURE_CONTAINER in global[room.name]['structList'])) {//也没有container
-            global[room.name]['store'] = room.getPositionAt(structList[STRUCTURE_SPAWN].pos.x+5,structList[STRUCTURE_SPAWN].pos.y+5 ) //选择spawn附近的一点作为能量集散点
+            global[room.name]['store'] = room.getPositionAt(structList[STRUCTURE_SPAWN][0].pos.x+5,structList[STRUCTURE_SPAWN][0].pos.y+5 ) //选择spawn附近的一点作为能量集散点
             
         } else {
             global[room.name]['store'] = global[room.name]['structList'][STRUCTURE_SPAWN][0].pos.findClosestByRange(FIND_MY_STRUCTURES, {
