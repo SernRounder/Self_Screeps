@@ -14,9 +14,10 @@ var roomRole = {
         })
         // 计算各种part
         // 平衡creep
-        if (Game.time % 100 == 0) {
+        if (Game.time % 20 == 0) {
             calcLimit(room)
             balanceScreep(room)
+            setStructure(room)
         }
 
         //运行塔
@@ -24,8 +25,6 @@ var roomRole = {
         //运行spawn
         spawnRule.run(spawns)
         //针对structSite发布任务
-        
-
     },
     init: function (room) {
         setStructure(room)
@@ -35,7 +34,7 @@ var roomRole = {
 }
 
 function setStructure(room = Game.rooms[0]) {//静态存储对象, 省的寻找了.
-    var structures = room.find(FIND_MY_STRUCTURES)
+    var structures = room.find(FIND_STRUCTURES)
     global[room.name] = {}
      //可用对象
     var structList = {}
@@ -59,7 +58,7 @@ function setStructure(room = Game.rooms[0]) {//静态存储对象, 省的寻找�
             global[room.name]['store'] = room.getPositionAt(structList[STRUCTURE_SPAWN][0].pos.x+5,structList[STRUCTURE_SPAWN][0].pos.y+5 ) //选择spawn附近的一点作为能量集散点
             
         } else {
-            global[room.name]['store'] = global[room.name]['structList'][STRUCTURE_SPAWN][0].pos.findClosestByRange(FIND_MY_STRUCTURES, {
+            global[room.name]['store'] = global[room.name]['structList'][STRUCTURE_SPAWN][0].pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: (structure) => {
                     return structure.structureType == STRUCTURE_CONTAINER
                 }
@@ -69,7 +68,25 @@ function setStructure(room = Game.rooms[0]) {//静态存储对象, 省的寻找�
 }
 
 function calcLimit(room = Game.rooms[0]) {
-    var maxEnergy = room.energyAvailable
+
+    //当矿工和搬运工齐全的时候, 等满了再生产
+    let maxEnergy=room.energyAvailable
+    let flag1=false
+    let flag2=false//用于标记是否存在搬运工和矿工
+    for(let name in Memory.creeps){
+        if (Memory.creeps[name].role=='carrier'){
+            flag1=true
+        }else if(Memory.creeps[name].role=='miner'){
+            flag2=true
+        }
+        if(flag1 && flag2){
+            break
+        }
+    }
+    if(flag1 && flag2){
+        maxEnergy=room.energyCapacityAvailable
+    }
+    
     if (maxEnergy < 300) {
         maxEnergy = 300
     }
@@ -123,8 +140,7 @@ function balanceScreep(room = Game.rooms[0]) {
     for (let role in limit) {
         creepCont[role] = limit[role][0]
     }
-    room.memory['spawnQueue'] = []
-    var spawnQueue = room.memory['spawnQueue']
+    var spawnQueue = []
     /*重置队列, 不需要计算了
         //计算在队列里的creep
         var spawnQueue=room.memory['spawnQueue']
@@ -162,11 +178,15 @@ function balanceScreep(room = Game.rooms[0]) {
     //现在只需要往spawn.room.memory['spawnQueue']里push进去那些大于0的role
     for (let role in creepCont) {
         while (creepCont[role] > 0) {
-            spawnQueue.push([role + Game.time + Math.random(), role, limit[role][1], 1])
+            let heavy=1
+            if (role=='miner'){heavy=3}
+            else if (role=='carrier'){heavy=2}
+            spawnQueue.push([role + Game.time + Math.random(), role, limit[role][1], heavy])
             creepCont[role] -= 1
         }
     }
-
+    spawnQueue.sort((orderA,orderB)=>orderA[3]-orderB[3])
+    room.memory['spawnQueue'] = spawnQueue
 
 
 }

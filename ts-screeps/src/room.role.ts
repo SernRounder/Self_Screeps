@@ -1,7 +1,7 @@
 var towerRule = require('room.struct.tower')
 var spawnRule = require('room.struct.spawn')
 
-var roomRole = {
+module.exports = {
     run: function (room = Game.rooms[0]) {
         var Towers = room.find(FIND_STRUCTURES, {
             filter: { structureType: STRUCTURE_TOWER }
@@ -73,12 +73,12 @@ function calcLimit(room = Game.rooms[0]) {
     if (maxEnergy < 300) {
         maxEnergy = 300
     }
-    let extralEnergy = maxEnergy - 50 //move
+    let extralEnergy:number = maxEnergy - 50 //move
     let carrierBody = {}
     carrierBody['work'] = 0
-    var tempCont = extralEnergy / 50 / 2 > 8 ? 8 : parseInt(extralEnergy / 50 / 2)
+    var tempCont:number = extralEnergy / 50 / 2 > 8 ? 8 : parseInt((extralEnergy / 50 / 2).toString())
     carrierBody['carry'] = tempCont
-    tempCont = extralEnergy / 50 / 2 > 8 ? 8 : parseInt(extralEnergy / 50 / 2)
+    tempCont = extralEnergy / 50 / 2 > 8 ? 8 : parseInt((extralEnergy / 50 / 2).toString())
     carrierBody['move'] = tempCont + 1
 
     let workerBody = {}
@@ -172,4 +172,3 @@ function balanceScreep(room = Game.rooms[0]) {
 }
 
 
-module.exports = roomRole;

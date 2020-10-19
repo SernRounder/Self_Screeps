@@ -13,30 +13,4 @@ module.exports = function () {
     stateScanner()
     checker()
 
-    //游戏所需结构体定义
-    //Memory.Mission={MissionID:{carrierMission},MissionID2:{carrierMission2}}
-    const carrierMission = {
-        'MissionType':'carrier',
-        'MissionID': '',
-        'FromID': '',
-        'ToID': '',
-        'SourceType': RESOURCE_ENERGY,
-        "Lock": 1,
-        "LockerID": [],
-        "FinLogic": '',
-        "RequestLogic":'',
-        'Weight': 1
-    }
-    const workerMission = {
-        'MissionType':'work',
-        'MissionID': '',
-        'TargetID': '',
-        "Lock": 1,
-        "LockerID": [],
-        "FinLogic": '',
-        "RequestLogic":'',
-        'workType':'build',
-        'Weight': 1
-    }
-
 }

@@ -11,7 +11,8 @@ module.exports = {
                 classicRole(creep)
             }
         } else {
-            runMission(creep)
+            classicRole(creep)
+            
         }
     }
 }
@@ -70,10 +71,15 @@ var getMission = function (creep) { //拿取当前可执行的权重最重的mis
 
 function runMission(creep = Game.creeps[0]) {
     var mission = Memory.Mission[creep.memory.mission.missionID]
+    if(!mission){
+        creep.memory.mission.missionID=''
+        creep.memory.mission.noMission=true
+        return false
+    }
     //检测mission是否完成
     if (global.dynLogic[mission.FinLogic](creep)) {
         creep.delMission()
-        return true
+        return false
     }
     //执行任务
     var from = Game.getObjectById(mission.FromID)
@@ -118,11 +124,11 @@ function classicRole(creep = Game.creeps[0]) {
     }
 
     if (creep.memory.sending && creep.store[creep.memory.sendingType] == false) {//状态机部分代码, 确定应该是拿货还是卸货状态
-        creep.say('Im Hungry')
+        //creep.say('Im Hungry')
         creep.memory.sending = false
     }
     if ((creep.memory.sending == false) && creep.store[resourceType] == creep.store.getCapacity(creep.memory.sendingType)) {
-        creep.say('Im Full')
+        //creep.say('Im Full')
 
         creep.memory.sending = true
     }
@@ -134,19 +140,26 @@ function classicRole(creep = Game.creeps[0]) {
         } else if (creep.fillTower()) {//填充塔
 
         } else {
-            creep.saveSource()
+            if(creep.pos.isEqualTo(global[creep.room.name].store)){
+                creep.drop(creep.memory.sendingType)
+            }else{
+                creep.moveTo(global[creep.room.name].store)
+                
+            }
         }
     } else { //拿货状态, 旗子标记的 > 掉落的 > 墓碑中的 > container中的
         //目前只实现了从container里拿和从地上捡
-        let dropped = creep.room.find(FIND_DROPPED_RESOURCES)
-        if (dropped) {
-            dropped.sort((a, b) => b - a)
+        let dropped = creep.room.find(FIND_DROPPED_RESOURCES,{filter:(stru)=>{return (stru.amount>creep.store.getCapacity()+50)&&stru.pos!=global[creep.room.name].store}})
+        
+        if (dropped.length>0) {
+            dropped.sort((a, b) => b.amount - a.amount)
             if (creep.pickup(dropped[0]) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(dropped)
+                creep.moveTo(dropped[0])
             }
         } else {
             let containerSource = findStructSource(creep, STRUCTURE_CONTAINER)[0]
-            if (containerSource) {
+            console.log(containerSource.pos!=global[creep.room.name].store.pos)
+            if (containerSource && containerSource.pos!=global[creep.room.name].store.pos) {
                 creep.getSource(containerSource)
             }
         }

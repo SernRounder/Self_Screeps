@@ -1,3 +1,5 @@
+const { workerMission } = require("./mission.def")
+
 module.exports = {
 
     run: function (creep = Game.creeps[0]) {
@@ -11,22 +13,26 @@ module.exports = {
                 classicRole(creep)
             }
         } else {
-            runMission(creep)
+            classicRole(creep)
         }
     }
 }
 
-var findStructSource = function (creep, structType, sourceType = RESOURCE_ENERGY) {
+var findStructSource = function (creep, structType, sourceType = RESOURCE_ENERGY) {//寻找指定类型的存有指定资源的建筑
+
+    let sources = global[creep.room.name].structList[structType]
+    sources.sort((a, b) => b.store[sourceType] - a.store[sourceType]);
+    return sources
 }
 
 //creep.memory.mission={missionID:'',noMission:True}
 
-var getMission = function (creep) { //拿取当前可执行的权重最重的build mission
+var getMission = function (creep) { //拿取当前可执行的权重最重的mission
     try {
         if (!('mission' in creep.memory)) {
             creep.memory.mission = {}
         }
-        if(Object.keys(Memory.Mission).length==0){
+        if (Object.keys(Memory.Mission).length == 0) {
             return false
         }
         var chooseMission
@@ -47,92 +53,93 @@ var getMission = function (creep) { //拿取当前可执行的权重最重的bui
         return false
     }
 
-    if(creep.lockMission(chooseMission)){
+    if (creep.lockMission(chooseMission)) {
         return true
     }
     return false
-    
+
 }
 
 function runMission(creep = Game.creeps[0]) {
     var mission = Memory.Mission[creep.memory.mission.missionID]
+    if (!mission) {
+        creep.memory.mission.missionID = ''
+        creep.memory.mission.noMission = true
+        return false
+    }
     //检测mission是否完成
     if (global.dynLogic[mission.FinLogic](creep)) {
         creep.delMission()
-        return true
+        return false
     }
     //执行任务
-    var dist = Game.getObjectById(mission.ToID)
+    let target = Game.getObjectById(mission.TargetID)
+    let sourceType = RESOURCE_ENERGY
+
 
     if (creep.memory.working == undefined) {
         creep.memory.working = false
     }
 
     if (creep.memory.working) {//建造状态
-        if (creep.fillSth(sourceType, dist)) { //往建筑里放
-
-        } else if (creep.pos.isEqualTo(dist)) { //往地上扔
-            creep.drop(sourceType)
-        } else {
-            creep.moveTo(dist) //接近扔的地方
+        if (creep.build(target) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(target)
         }
+    } else {//拿资源状态
 
-    } else {//拿货状态
-        if (creep.getSource(from, sourceType)) { // 从建筑里拿
-
-        } else if (creep.pos.isNearTo(from)) { // 从地上拣
-            creep.pickup(from)
-        } else {
-            creep.moveTo(from) // 靠近拣的地方
-        }
+        creep.say(global[creep.room.name].store)
+        creep.getSource(global[creep.room.name].store, sourceType)  // 从当前房间里的物资集散点里拿
+        creep.say(global[creep.room.name].store)
     }
     if (creep.memory.working && creep.store[sourceType] == 0) { creep.memory.working = false } //状态机部分
     if ((!creep.memory.working) && creep.store.getFreeCapacity(sourceType) == 0) { creep.memory.working = true }
 }
 
 function classicRole(creep = Game.creeps[0]) {
-    //初始化-> 去拿货 -> 拿货 -> 去卸货 -> 卸货 -> 去拿货
-    if (creep.memory['working'] == undefined) {
-        creep.memory['working'] = true
-    }
-    var resourceType = creep.memory['workingType']//应该搬运的物品类型
-    if (!resourceType) {//未设定类型时默认搬运能量
-        resourceType = RESOURCE_ENERGY
-        creep.memory['workingType'] = resourceType
-    }
-
-    if (creep.memory.working && creep.store[creep.memory.workingType] == false) {//状态机部分代码, 确定应该是拿货还是卸货状态
-        creep.say('Im Hungry')
+    var sourceType=RESOURCE_ENERGY
+    if (!('working' in creep.memory)) {
         creep.memory.working = false
     }
-    if ((creep.memory.working == false) && creep.store[resourceType] == creep.store.getCapacity(creep.memory.workingType)) {
-        creep.say('Im Full')
-
+    if (creep.memory.working && creep.store[sourceType] == 0) {
+        creep.memory.working = false
+    } //状态机部分
+    
+    if (!(creep.memory.working) && creep.store.getFreeCapacity(sourceType) == 0) {
         creep.memory.working = true
+        creep.say('work')
     }
-    //TODO :当前持有的东西不是自己要搬运的东西时的卸货代码
+    
+    if (creep.memory.working) {
 
-    if (creep.memory.working) {//卸货状态
-        if (creep.fillSpawn()) {//填充Spawn
 
-        } else if (creep.fillTower()) {//填充塔
-
-        } else {
-            creep.saveSource()
-        }
-    } else { //拿货状态, 旗子标记的 > 掉落的 > 墓碑中的 > container中的
-        //目前只实现了从container里拿和从地上捡
-        let dropped = creep.room.find(FIND_DROPPED_RESOURCES)
-        if (dropped) {
-            dropped.sort((a, b) => b - a)
-            if (creep.pickup(dropped[0]) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(dropped)
+        var site = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
+        
+        if (site) {
+            if (creep.build(site) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(site)
             }
         } else {
-            let containerSource = findStructSource(creep, STRUCTURE_CONTAINER)[0]
-            if (containerSource) {
-                creep.getSource(containerSource)
+            
+            const NeedsFix = creep.room.find(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return (structure.hits < structure.hitsMax  && structure.hitsMax < 200000000)
+                }
+            });
+            if(NeedsFix.length>0){
+                
+            
+            NeedsFix.sort((a, b) => a.hits - b.hits);
+            if(creep.repair(NeedsFix[0])==ERR_NOT_IN_RANGE){
+                creep.moveTo(NeedsFix[0])
+            }
+                
+            }else if (creep.upgradeController(global[creep.room.name].structList[STRUCTURE_CONTROLLER][0]) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(global[creep.room.name].structList[STRUCTURE_CONTROLLER][0])
             }
         }
+    } else {
+        creep.getSource(global[creep.room.name].store, sourceType)
+        
     }
+
 }

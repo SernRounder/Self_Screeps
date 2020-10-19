@@ -9,8 +9,8 @@ module.exports = function () {
             }
             if('mission' in Memory.creeps[name]){
                 var missionID = Memory.creeps[name].mission
-                Memory['Mission'][missionID]['Lock']+=1
-                console.log(Memory['Mission'][missionID]+'free!')
+                //Memory['Mission'][missionID]['Lock']+=1
+                //console.log(Memory['Mission'][missionID]+'free!')
             }
             delete Memory.creeps[name];
             console.log('Clearing non-existing creep memory:', name);

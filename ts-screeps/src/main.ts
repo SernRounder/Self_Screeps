@@ -4,8 +4,7 @@ var creepsRun = require('creep.run')
 var gameRun = require('game.run')
 
 if (!('lock' in Memory)) {
-    Memory.lock = {}
-    Memory.Mission = {}
+    Memory.Missions = {}
 }
 
 for (var roomName in Game.rooms) {

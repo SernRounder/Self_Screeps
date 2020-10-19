@@ -38,20 +38,23 @@ function fillTower(PowerLimit = 700) {
     }
 }
 
-function getSource(target, sourceType = RESOURCE_ENERGY) { //从指定的建筑中拿source
+function getSource(target, sourceType = RESOURCE_ENERGY) { //从指定的对象中拿source, 可以指定建筑/墓碑/残骸/掉落资源
+    
     if (this.withdraw(target, sourceType) == ERR_NOT_IN_RANGE) {
         this.moveTo(target, { visualizePathStyle: { stroke: '#ffaa00' } });
-    }else{
-        return false
-    }
+    } else  {
+        let source=this.room.lookForAt(LOOK_RESOURCES,target)[0]
+        if (this.pickup(source) == ERR_NOT_IN_RANGE){
+        this.moveTo(source)}
+    } 
     return true
 }
 
 function fillSth(source = RESOURCE_ENERGY, dist) { // 使用source填充dist
     if (this.transfer(dist, source) == ERR_NOT_IN_RANGE) {
         this.moveTo(dist, { visualizePathStyle: { stroke: '#ffffff' } });
-        
-    }else{
+
+    } else {
         return false
     }
     return true
@@ -85,7 +88,6 @@ function lockMission(target) {
         if (target['Lock'] > 0) {
             this.memory.mission.missionID = target.MissionID
             target['Lock'] -= 1
-            target['LockerID'].push(this.id)
             this.memory.mission.noMission = false
         } else {
             return false
@@ -100,12 +102,6 @@ function pauseMission() {
         var missionID = this.memory.mission['missionID']
         var mission = Memory.Misssion[missionID]
         Memory.Mission[missionID]['Lock'] += 1//增加一个lock
-        for (let i in mission['LockerID']) {
-            let creepID = mission['LockerID'][i]
-            if (creepID == this.id) {
-                Memory.Mission[missionID].splice(i, 1)//从mission执行队列中移除自己
-            }
-        }
         this.memory.mission.noMission = true
         this.memory.mission.missionID = ''
         return true
@@ -116,14 +112,11 @@ function delMission() {
     try {
         var missionID = this.memory.mission.missionID
         var mission = Memory.Mission[missionID]
-        for (let creepID of mission.LockerID) {
-            try {
-                let creep = Game.getObjectById(creepID)
-                creep.memory.mission.missionID = ''
-                creep.memory.mission.noMission = true
-            } catch { continue }
-        }
-    } catch { }
+        delete Memory.Mission[missionID]//删了任务本体
+        this.memory.mission.noMission = true
+        this.memory.missionID = ''//把自己置空
+        return true
+    } catch { return false }
 }
 
 

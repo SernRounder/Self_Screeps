@@ -74,7 +74,7 @@ module.exports.loop = function () {
     const targets1 = Game.spawns['Spawn1'].room.find(FIND_STRUCTURES, {
         //filter: object => object.hits < object.hitsMax
         filter: (structure) => {
-            return (structure.hits < structure.hitsMax && structure.hits<10000)
+            return (structure.hits < structure.hitsMax && structure.hits<24700000)
         }
     });
 

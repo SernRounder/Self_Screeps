@@ -1,4 +1,4 @@
-var dynamicLogic = {
+module.exports  = {
     init: function () {
         var dynLocic = {
             'm&a': moveAndAttack,//到达并攻击flag标记的地点
@@ -27,4 +27,3 @@ var claim = function (creep = Game.creeps[0]) {
     }
 }
 
-module.exports = dynamicLogic
