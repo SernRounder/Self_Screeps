@@ -9,7 +9,7 @@ var tower = {
 
             const NeedsFix = tower.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.hits < structure.hitsMax && structure.hits<25000000)
+                    return (structure.hits < structure.hitsMax && structure.structureType != STRUCTURE_WALL &&  structure.structureType != STRUCTURE_RAMPART )
                 }
             });
 

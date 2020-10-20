@@ -1,3 +1,4 @@
+const { workerMission } = require('./mission.def')
 var mountCreep = require('./mount.creep')
 //var mountRoom=require('./mount.room')
 //var mountFlag=require('./mount.flag')
