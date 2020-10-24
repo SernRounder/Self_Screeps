@@ -6,24 +6,30 @@ var claimer = {
             creep.memory.mission = { missionID: '', noMission: true }
         }
         if (creep.memory.mission.noMission || !('noMission' in creep.memory.mission)) {
-            if(creep.pickMission('claim')) runMission(creep)
-            
-            else creep.memory.mission.noMission=true
-            
-        }else{
+            if (creep.pickMission('claim')) runMission(creep)
+
+            else creep.memory.mission.noMission = true
+
+        } else {
             runMission(creep)
         }
     }
 }
 
-function runMission(creep=Game.creeps[0]){
-   
-    let mission=new claimMission
-    mission=Memory.Mission[creep.memory.mission.missionID]
-    let targetFlag=Game.flags[mission.TargetFlag]
-    if(creep.move2Flag(targetFlag)){
+function runMission(creep = Game.creeps[0]) {
 
-    }else{
+    let mission = new claimMission
+    mission = Memory.Mission[creep.memory.mission.missionID]
+    let targetFlag = Game.flags[mission.TargetFlag]
+    if (!targetFlag) {
+        delete Memory.Mission[creep.memory.mission.missionID]
+        creep.memory.mission.missionID = ''
+        creep.memory.mission.noMission = true
+    }
+    
+    if (creep.move2Flag(targetFlag)) {
+
+    } else {
         creep.say(creep.claimController(targetFlag.pos.lookFor(LOOK_STRUCTURES)[0]))
     }
 }

@@ -9,10 +9,10 @@ var tower = {
 
             const NeedsFix = tower.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.hits < structure.hitsMax && structure.structureType != STRUCTURE_WALL &&  structure.structureType != STRUCTURE_RAMPART )
+                    return (structure.hits < structure.hitsMax && structure.structureType != STRUCTURE_WALL )//&&  structure.structureType != STRUCTURE_ROAD )
                 }
             });
-
+            
             NeedsFix.sort((a, b) => a.hits - b.hits);
 
             if (NeedsFix.length > 0) {
@@ -22,7 +22,7 @@ var tower = {
             }
             //attack
             const targets = tower.room.find(FIND_HOSTILE_CREEPS);
-            //console.log(targets.length)
+
 
             if (targets.length > 0) {
                 var enemy = targets
@@ -32,9 +32,9 @@ var tower = {
            
             if (enemy) {
                 //直接打
-               // console.log(enemy.length)
                 tower.attack(enemy[0])
             } else if (fixer && tower.store.getUsedCapacity(RESOURCE_ENERGY) > MiniSave) {
+                if(fixer[0].hits>1000000) return //剩下的血多, 不修
                 //没敌人, 而且剩的能量多了再修
                 tower.repair(fixer[0])
             }

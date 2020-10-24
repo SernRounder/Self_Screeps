@@ -96,6 +96,24 @@ function runMission(creep = Game.creeps[0]) {
 }
 
 function classicRole(creep = Game.creeps[0]) {
+    if (creep.store[RESOURCE_ENERGY] > 0) {
+        let currPosStruct = creep.pos.lookFor(LOOK_STRUCTURES)
+        for (let struct of currPosStruct) {
+            if (struct.structureType == STRUCTURE_ROAD && struct.hits < struct.hitsMax) {
+                creep.repair(struct)
+                creep.say('fix road')
+            }
+        }
+    }
+    if (creep.room.name != creep.memory.born.name) {//在其他房间
+        //creep.moveTo(Game.rooms[creep.memory.born.name].getPositionAt(25,25),{visualizePathStyle:{}})
+        //    return
+        creep.say(creep.memory.born.name)
+        if (creep.memory.target == false) {
+            creep.moveTo(Game.rooms[creep.memory.born.name].getPositionAt(25, 25), { visualizePathStyle: {} })
+            return
+        }
+    }
     var sourceType = RESOURCE_ENERGY
     if (!('working' in creep.memory)) {
         creep.memory.working = false
@@ -116,7 +134,22 @@ function classicRole(creep = Game.creeps[0]) {
         }
 
     } else {
-        creep.getSource(global[creep.room.name].store, sourceType)
+        
+        if(creep.getSource(global[creep.room.name].store, RESOURCE_ENERGY)){
+            return
+        }else{
+            let contain=creep.pos.findClosestByPath(FIND_STRUCTURES,{filter: function(struct){return struct.structureType==STRUCTURE_CONTAINER && struct.store[RESOURCE_ENERGY]>creep.store.getCapacity()}})
+            
+            if(contain){
+                if(creep.withdraw(contain,RESOURCE_ENERGY)==ERR_NOT_IN_RANGE){
+                    creep.moveTo(contain)
+                    creep.memory.target=contain.id
+                    //creep.say('容器!')
+                    return
+                }
+            }
+            creep.mine()
+        }
 
     }
 

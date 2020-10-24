@@ -9,7 +9,7 @@ module.exports.stateScanner = function () {
      if (!Memory.stats) Memory.stats = {}
      //room. energy
      
-     if(!Memory.stats.room) Memory.stats.room={}
+     Memory.stats.room={}
      for (roomName in Game.rooms){
          if(!Memory.stats.room[roomName]) Memory.stats.room[roomName]={}
          var tower=Game.rooms[roomName].find(FIND_STRUCTURES,{filter:(s)=>{return s.structureType==STRUCTURE_TOWER}})
@@ -18,10 +18,12 @@ module.exports.stateScanner = function () {
              towerEnergy+=towers.store.getUsedCapacity(RESOURCE_ENERGY)
          }
          try{
+            Memory.stats.room[roomName].Level=Game.rooms[roomName].controller.level
+            Memory.stats.room[roomName].LevelStats=Game.rooms[roomName].controller.progress/Game.rooms[roomName].controller.progressTotal*100
             Memory.stats.room[roomName].towersEnergy=towerEnergy
             Memory.stats.room[roomName].spawnEnergy=Game.rooms[roomName].energyAvailable
-            Memory.stats.room[roomName].storeEnergy=Game.rooms[roomName].storage.store.getUsedCapacity()
-            Memory.stats.room[roomName].terminalEnergy=Game.rooms[roomName].terminal.store.getUsedCapacity()
+            Memory.stats.room[roomName].storeEnergy=Game.rooms[roomName].storage.store.getUsedCapacity(RESOURCE_ENERGY)
+            Memory.stats.room[roomName].terminalEnergy=Game.rooms[roomName].terminal.store.getUsedCapacity(RESOURCE_ENERGY)
             let myNuke=Game.rooms[roomName].find(FIND_STRUCTURES,{filter:(s)=>{return s.structureType==STRUCTURE_NUKER}})[0]
             Memory.stats.room[roomName].NukeStat=(myNuke.store.getUsedCapacity(RESOURCE_ENERGY)+myNuke.store.getUsedCapacity(RESOURCE_GHODIUM))/(myNuke.store.getCapacity(RESOURCE_ENERGY)+myNuke.store.getCapacity(RESOURCE_GHODIUM))
          }catch{

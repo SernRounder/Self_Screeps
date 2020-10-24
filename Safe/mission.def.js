@@ -17,8 +17,8 @@ class carryMission extends Mission {
         this.FromID=''
         this.MissionType = 'carry'
         this.ToID=''
-
-        //this.SourceType=RESOURCE_ENERGY
+        this.SourceType=RESOURCE_ENERGY
+        this.bornRoom='W2S41'
     }
 }
 
@@ -38,6 +38,14 @@ class claimMission extends Mission{
     }
 }
 
+class attackMission extends Mission{
+    constructor(){
+        super()
+        this.TargetFlag=''
+        this.MissionType='attack'
+    }
+}
+module.exports.attackMission=attackMission
 module.exports.workMission=workMission
 module.exports.carryMission=carryMission
 module.exports.claimMission=claimMission

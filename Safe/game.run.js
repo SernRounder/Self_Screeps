@@ -2,6 +2,7 @@
  * 游戏整体相关逻辑
  */
 const { creepMemoryCheck, missionCheck } = require('./game.checker');
+const { flagLogic } = require('./game.flag.logic');
 
 module.exports = function () {
     if (Game.cpu.bucket > 9000) {
@@ -12,4 +13,6 @@ module.exports = function () {
     
     creepMemoryCheck()
     missionCheck()
+    flagLogic.run()
+    
 }

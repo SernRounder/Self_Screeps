@@ -8,8 +8,9 @@ module.exports = function () {
     if (!global.hasExtension) {
         console.log('[mount] 重新挂载拓展')
         global.hasExtension = true
-        
+        let startCPU=Game.cpu.getUsed()
         mountCreep()
+        console.log('mount use cpu:',Game.cpu.getUsed()-startCPU)
         //mountFlag()
        // mountRoom()
     }

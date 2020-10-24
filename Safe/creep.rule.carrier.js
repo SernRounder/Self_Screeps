@@ -10,7 +10,7 @@ module.exports = {
             if (creep.pickMission('carry')) {
                 runMission(creep)
             } else {//任务拿取失败, 执行常规逻辑
-                creep.memory.mission.noMission=true
+                creep.memory.mission.noMission = true
                 classicRole(creep)
             }
         } else {
@@ -27,34 +27,58 @@ var findStructSource = function (creep, structType, sourceType = RESOURCE_ENERGY
     //     }
     // });
     let sources = global[creep.room.name].structList[structType]
-    let choose=[]
-    for (let source of sources){
-        if (source.store.getUsedCapacity(sourceType)>creep.store.getFreeCapacity(sourceType)) choose.push(source)
+    if (!sources) return false
+    let choose = []
+    for (let source of sources) {
+        //creep.say(source.store.getUsedCapacity(sourceType))
+        if (source.store.getUsedCapacity(sourceType) > creep.store.getFreeCapacity(sourceType)) choose.push(source)
     }
     //sources.sort((a, b) => b.store[sourceType] - a.store[sourceType]);
-    let finchoose=creep.pos.findClosestByRange(choose)
+    if(choose.length==0) return []
+    let finchoose = creep.pos.findClosestByRange(choose)
     return [finchoose]
 }
 
 //creep.memory.mission={missionID:'',noMission:True}
 
 function runMission(creep = Game.creeps[0]) {
+    creep.memory.fromStorage = false
     var mission = Memory.Mission[creep.memory.mission.missionID]
-    if(!mission){
-        creep.memory.mission.missionID=''
-        creep.memory.mission.noMission=true
+    if (!mission) {
+        creep.memory.mission.missionID = ''
+        creep.memory.mission.noMission = true
         return false
+    }
+    var sourceType = mission.SourceType
+    for (let source in creep.store) { //丢掉所有不是目标资源类型的资源
+        if (source != sourceType) {
+            if (creep.transfer(creep.room.storage, source) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(creep.room.storage)
+            }
+            return
+        }
+    }
+
+
+    if (creep.memory.sending && creep.store[sourceType] == 0) { creep.memory.sending = false } //状态机部分
+    if ((!creep.memory.sending) && creep.store[sourceType] != 0) { creep.memory.sending = true }
+    //检测任务完成
+    let missionID = creep.memory.mission.missionID
+    if (global.spLogic.FinLogic[Memory.Mission[missionID].FinLogic]({ mission: Memory.Mission[missionID] })) {
+        console.log('remove ' + missionID)
+        delete Memory.Mission[missionID]
     }
     //执行任务
     var from = Game.getObjectById(mission.FromID)
     var dist = Game.getObjectById(mission.ToID)
-    var sourceType = mission.SourceType
 
     if (creep.memory.sending == undefined) {
         creep.memory.sending = false
     }
 
     if (creep.memory.sending) {//卸货状态
+        Game.map.visual.line(creep.pos, dist.pos,
+            { color: '#66ccff', lineStyle: 'dashed' });
         if (creep.fillSth(sourceType, dist)) { //往建筑里放
 
         } else if (creep.pos.isEqualTo(dist)) { //往地上扔
@@ -64,20 +88,21 @@ function runMission(creep = Game.creeps[0]) {
         }
 
     } else {//拿货状态
-        if (creep.getSource(from, sourceType)) { // 从建筑里拿
-
+        Game.map.visual.line(creep.pos, from.pos,
+            { color: '#ff0000', lineStyle: 'dashed' });
+        if (creep.withdraw(from, sourceType) == ERR_NOT_IN_RANGE) { // 从建筑里拿
+            creep.moveTo(from)
         } else if (creep.pos.isNearTo(from)) { // 从地上拣
             creep.pickup(from)
         } else {
             creep.moveTo(from) // 靠近拣的地方
         }
+
     }
-    if (creep.memory.sending && creep.store[sourceType] == 0) { creep.memory.sending = false } //状态机部分
-    if ((!creep.memory.sending) && creep.store.getFreeCapacity(sourceType) == 0) { creep.memory.sending = true }
+
 }
 
 function classicRole(creep = Game.creeps[0]) {
-    //初始化-> 去拿货 -> 拿货 -> 去卸货 -> 卸货 -> 去拿货
     if (creep.memory['sending'] == undefined) {
         creep.memory['sending'] = true
     }
@@ -86,16 +111,65 @@ function classicRole(creep = Game.creeps[0]) {
         resourceType = RESOURCE_ENERGY
         creep.memory['sendingType'] = resourceType
     }
+    for (let source in creep.store) { //丢掉所有不是目标资源类型的资源
+        if (source != resourceType) {
+            if (creep.transfer(creep.room.storage, source) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(creep.room.storage)
+            }
+            return
+        }
+    }
 
     if (creep.memory.sending && creep.store[creep.memory.sendingType] == false) {//状态机部分代码, 确定应该是拿货还是卸货状态
         //creep.say('Im Hungry')
         creep.memory.sending = false
+        creep.memory.target = false
     }
     if ((creep.memory.sending == false) && creep.store[resourceType] == creep.store.getCapacity(creep.memory.sendingType)) {
         //creep.say('Im Full')
-
+        creep.memory.target = false
         creep.memory.sending = true
     }
+    if (creep.store[RESOURCE_ENERGY] > 0) {//修路
+        let currPosStruct = creep.pos.lookFor(LOOK_STRUCTURES)
+        for (let struct of currPosStruct) {
+            if (struct.structureType == STRUCTURE_ROAD && struct.hits < struct.hitsMax) {
+                creep.repair(struct)
+                creep.say('fix road')
+            }
+        }
+    }
+
+    if (!('target' in creep.memory)) {
+        creep.memory.target = false
+    }
+    if (creep.memory.target) {
+        let target = Game.getObjectById(creep.memory.target)
+        if (!target) {
+            creep.memory.target = false
+            return
+        }
+        if (!creep.pos.isNearTo(target)) {
+            creep.moveTo(target, { visualizePathStyle: { ignoreCreeps: true, stroke: '#66ccff' } })
+            return
+        } else {
+            creep.memory.target = false
+        }
+    }
+
+    //初始化-> 去拿货 -> 拿货 -> 去卸货 -> 卸货 -> 去拿货
+    if (creep.room.name != creep.memory.born.name) {//在其他房间
+        //creep.moveTo(Game.rooms[creep.memory.born.name].getPositionAt(25,25),{visualizePathStyle:{}})
+        //    return
+        creep.say(creep.memory.born.name)
+        if (creep.memory.target == false) {
+            creep.moveTo(Game.rooms[creep.memory.born.name].getPositionAt(25, 25), { visualizePathStyle: {} })
+            return
+        }
+    }
+
+
+
     //TODO :当前持有的东西不是自己要搬运的东西时的卸货代码
 
     if (creep.memory.sending) {//卸货状态
@@ -104,33 +178,114 @@ function classicRole(creep = Game.creeps[0]) {
         } else if (creep.fillTower()) {//填充塔
 
         } else if (!creep.room.storage) {
-            if(creep.pos.isEqualTo(global[creep.room.name].store)){
+            try {
+                if (global[creep.room.name].store.structureType == STRUCTURE_CONTAINER) {
+                    if (creep.transfer(global[creep.room.name].store, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        creep.memory.target = global[creep.room.name].store.id
+                    }
+                }
+            } catch { }
+            if (creep.pos.isEqualTo(global[creep.room.name].store)) {
                 creep.drop(creep.memory.sendingType)
-            }else{
+            } else {
+                creep.memory.target = global[creep.room.name].store.id
                 creep.moveTo(global[creep.room.name].store)
+
+            }
+
+        } else {
+            if (creep.room.terminal) {
+
+                if (creep.room.storage.store.getUsedCapacity('energy') > 500000 && creep.room.terminal.store.getUsedCapacity('energy') < 100000) {
+                    creep.say('填终端')
+                    if (creep.transfer(creep.room.terminal, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(creep.room.terminal)
+
+                    }
+                    return
+                }
+            }
+            let myNukes = creep.room.find(FIND_MY_STRUCTURES, { filter: function (stru) { return stru.structureType == STRUCTURE_NUKER } })
+            if (myNukes.length && creep.room.storage.store.getUsedCapacity('energy') > 500000) {
+                let myNuke = myNukes[0]
+                if (myNuke.store[RESOURCE_ENERGY] < myNuke.store.getCapacity(RESOURCE_ENERGY)) {
+                    creep.say('填核弹')
+                    if (creep.transfer(myNuke, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(myNuke)
+                        return
+                    }
+                }
+            }
+            if(creep.memory.fromStorage) return
+            creep.say(creep.memory.fromStorage)
+            for (let resType in creep.store) {
                 
+                if (creep.transfer(creep.room.storage, resType) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(creep.room.storage)
+                    break
+                }
             }
-            
-        }else{
-            
-            if(creep.transfer(creep.room.storage,RESOURCE_ENERGY)==ERR_NOT_IN_RANGE){
-                creep.moveTo(creep.room.storage)
-            }
+
         }
     } else { //拿货状态, 旗子标记的 > 掉落的 > 墓碑中的 > container中的
         //目前只实现了从container里拿和从地上捡
-        let dropped = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES,{filter:(stru)=>{return (stru.amount>creep.store.getCapacity()+50)&&stru.pos!=global[creep.room.name].store}})
-        
+        //或者从stroage里拿
+        creep.memory.fromStorage=false
+        const tomb = creep.pos.findClosestByRange(FIND_TOMBSTONES, {//拣墓碑
+            filter: function (object) {
+                return object.store.getUsedCapacity() > creep.store.getFreeCapacity() * 0.4;
+            }
+        });
+        if (tomb) {
+            //if(false){
+            creep.say('TOMB!')
+            if (!creep.pos.isNearTo(tomb)) {
+                creep.memory.target = tomb.id
+                creep.moveTo(tomb)
+                return
+            }
+            for (sourceType in tomb.store) {
+                creep.withdraw(tomb, sourceType)
+            }
+            return
+        }
+
+        //拣残骸
+        const ruin = creep.pos.findClosestByRange(FIND_RUINS, {
+            filter: function (object) {
+                return object.store.getUsedCapacity() > creep.store.getFreeCapacity() * 0.4;
+            }
+        });
+        if (ruin) {
+            //if(false){
+            creep.say('RUIN!')
+            if (!creep.pos.isNearTo(ruin)) {
+                creep.memory.target = ruin.id
+                creep.moveTo(ruin)
+                return
+            }
+            for (sourceType in ruin.store) {
+                creep.withdraw(ruin, sourceType)
+            }
+            return
+        }
+
+        let dropped = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, { filter: (stru) => { return (stru.amount > creep.store.getCapacity() + 50) && stru.pos != global[creep.room.name].store && stru.pos != global[creep.room.name].store.pos } })
+
         if (dropped) {
+            creep.say('pick')
             if (creep.pickup(dropped) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(dropped)
+                creep.memory.target = dropped.id
             }
         } else {
-            let containerSource = findStructSource(creep, STRUCTURE_CONTAINER)[0]
-            
-            if (containerSource ) {
-                creep.getSource(containerSource)
+            let containerSource = findStructSource(creep, STRUCTURE_CONTAINER)
+            if (containerSource.length > 0) {
+                creep.getSource(containerSource[0])
+            } else if (creep.room.storage ) {
+                creep.getSource(creep.room.storage)
+                creep.memory.fromStorage=true
             }
         }
+
     }
 }
